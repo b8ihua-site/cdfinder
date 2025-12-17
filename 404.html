@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>404 Not Found</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zalando+Sans+Expanded:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Questrial&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jersey+20&display=swap" rel="stylesheet"></head><body>
+<div class="site-header">
+
+  <h1>takaba<br>works</h1></div>
+
+
+  
+<style>
+
+
+.site-header h1 {
+  margin: 0 0 8px;
+font-family:Zalando Sans Expanded;
+  color:black;
+line-height:17px;
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+ margin: 17px 18px;
+}
+
+.site-header p {
+  margin: 0;
+margin-top:0px;
+  font-size: 0.9rem;
+  color: black;
+font-family: Questrial;
+line-height:15px;
+}
+
+body {
+  margin: 0;
+  height: 100vh;
+  background: #fff;
+  color: #000;
+  font-family: sans-serif;
+  overflow: hidden;
+}
+
+#score {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  font-size:12px;
+font-family: Questrial;
+}
+
+.content {
+  
+  margin-top: 5vh;
+}
+
+.target {
+  display: inline-block;
+  margin: 20px;
+}
+
+.char {
+  display: inline-block;
+  transition: transform 0.3s, opacity 0.3s;
+}
+
+.char.hidden {
+  opacity: 0;
+  transform: scale(1.5) rotate(20deg);
+  pointer-events: none;
+}
+
+#ball {
+  position: fixed;
+  width: 30px;
+  height: 30px;
+  background: #111;
+  border-radius: 50%;
+  touch-action: none;
+  cursor: grab;
+  z-index: 10;
+}
+
+#arrow {
+  position: fixed;
+  height: 2px;
+  background: #000;
+  transform-origin: left center;
+  display: none;
+  z-index: 5;
+}
+
+.particle {
+  position: fixed;
+  width: 4px;
+  height: 4px;
+  background: #000;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+a.target {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 24px;
+border: 1px solid #111;
+  background: white;
+  color: #111;
+font-size:12px;
+  text-decoration: none;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+a.target:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+}
+
+#hint {
+  position: fixed;
+  top: calc(100vh - 80px); /* ボールの下あたりに */
+  left: 50%;
+  margin-left: -50px; /* 幅に応じて調整 */
+  font-size: 14px;
+  color: #555;
+  font-family: sans-serif;
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+#hint.show {
+  opacity: 1;
+}
+</style>
+
+
+
+
+<div id="score">SCORE: 0</div>
+
+<main class="content">
+  <h1 class="target" style="font-family:Questrial;">404 Not Found</h1>
+  <p class="target">お探しのページは見つかりませんでした💦</p>
+
+  <p class="target" style="color:gray; font-size:12px; text-align:left;">ご指定のURLまたはリンク先のページを表示することができませんでした。
+アクセスいただいたページは削除されたか、移動された可能性があります。
+アドレスの入力に誤りがある場合もございますので、今一度ご確認ください。</p>
+  <p class="target" style="color:gray; font-size:12px; margin-top:-10px; text-align:left;">The page at the URL you requested or the link you followed could not be displayed. The page you tried to access may have been deleted or moved. Please check the address you entered, as there may be a mistake.</p>
+
+  <a class="target" href="b8ihua.com">トップページへ戻る</a>
+
+<p class="target" style="color:gray; font-size:12px; margin-top:-10px; text-align:left;">ひっぱって破壊！</p>
+</main>
+
+<div id="ball"></div>
+<div id="hint"></div>
+<div id="arrow"></div>
+
+
+<script>
+/* ========= 初期セットアップ ========= */
+
+const ball = document.getElementById("ball");
+const arrow = document.getElementById("arrow");
+const scoreEl = document.getElementById("score");
+const hint = document.getElementById("hint");
+
+let score = 0;
+
+/* ========= 文章を1文字ずつspan化（空白は &nbsp; に） ========= */
+document.querySelectorAll(".target").forEach(el => {
+  const text = el.textContent;
+  el.textContent = "";
+  [...text].forEach(c => {
+    const span = document.createElement("span");
+    span.className = "char";
+    span.innerHTML = c === " " ? "&nbsp;" : c;
+    el.appendChild(span);
+  });
+});
+
+const chars = document.querySelectorAll(".char");
+
+/* ========= ボール物理 ========= */
+
+let dragging = false;
+let startX = 0, startY = 0;
+let x = window.innerWidth / 2 - 15;
+let y = window.innerHeight - 100;
+let vx = 0, vy = 0;
+
+ball.style.left = x + "px";
+ball.style.top = y + "px";
+
+/* ========= 入力処理 ========= */
+
+function startDrag(e) {
+  dragging = true;
+  startX = e.clientX ?? e.touches[0].clientX;
+  startY = e.clientY ?? e.touches[0].clientY;
+  vx = vy = 0;
+  arrow.style.display = "block";
+  if (e.pointerId) ball.setPointerCapture(e.pointerId);
+}
+
+function onDrag(e) {
+  if (!dragging) return;
+  const clientX = e.clientX ?? e.touches[0].clientX;
+  const clientY = e.clientY ?? e.touches[0].clientY;
+
+  const dx = startX - clientX;
+  const dy = startY - clientY;
+  const length = Math.hypot(dx, dy);
+  const angle = Math.atan2(dy, dx);
+
+  arrow.style.width = length + "px";
+  arrow.style.left = x + 15 + "px";
+  arrow.style.top = y + 15 + "px";
+  arrow.style.transform = `rotate(${angle}rad)`;
+}
+
+function endDrag(e) {
+  if (!dragging) return;
+  dragging = false;
+  arrow.style.display = "none";
+
+  const clientX = e.clientX ?? e.changedTouches?.[0].clientX;
+  const clientY = e.clientY ?? e.changedTouches?.[0].clientY;
+
+  const POWER = 0.25;
+  vx = (startX - clientX) * POWER;
+  vy = (startY - clientY) * POWER;
+}
+
+// イベント登録
+ball.addEventListener("pointerdown", startDrag);
+ball.addEventListener("mousedown", startDrag);
+ball.addEventListener("touchstart", startDrag);
+
+window.addEventListener("pointermove", onDrag);
+window.addEventListener("mousemove", onDrag);
+window.addEventListener("touchmove", onDrag);
+
+window.addEventListener("pointerup", endDrag);
+window.addEventListener("mouseup", endDrag);
+window.addEventListener("touchend", endDrag);
+/* ========= 衝突判定 ========= */
+
+function checkCollision() {
+  const ballRect = ball.getBoundingClientRect();
+
+  chars.forEach(char => {
+    if (char.classList.contains("hidden")) return;
+
+    const rect = char.getBoundingClientRect();
+    const hit =
+      ballRect.left < rect.right &&
+      ballRect.right > rect.left &&
+      ballRect.top < rect.bottom &&
+      ballRect.bottom > rect.top;
+
+    if (hit) {
+      explode(rect.left + rect.width / 2, rect.top + rect.height / 2);
+      char.classList.add("hidden");
+      score++;
+      scoreEl.textContent = "SCORE: " + score;
+
+      setTimeout(() => {
+        char.classList.remove("hidden");
+      }, 3000);
+    }
+  });
+}
+
+/* ========= 粒子エフェクト ========= */
+
+function explode(cx, cy) {
+  for (let i = 0; i < 8; i++) {
+    const p = document.createElement("div");
+    p.className = "particle";
+    document.body.appendChild(p);
+
+    let px = cx;
+    let py = cy;
+    let vx = (Math.random() - 0.5) * 6;
+    let vy = (Math.random() - 0.5) * 6;
+    let life = 30;
+
+    function animate() {
+      px += vx;
+      py += vy;
+      vy += 0.3;
+      p.style.left = px + "px";
+      p.style.top = py + "px";
+      p.style.opacity = life / 30;
+      life--;
+
+      if (life > 0) {
+        requestAnimationFrame(animate);
+      } else {
+        p.remove();
+      }
+    }
+    animate();
+  }
+}
+
+/* ========= メインループ ========= */
+
+function update() {
+  x += vx;
+  y += vy;
+
+  vx *= 0.99;
+  vy *= 0.99;
+
+  if (x < 0 || x > window.innerWidth - 30) vx *= -1;
+  if (y < 0 || y > window.innerHeight - 30) vy *= -1;
+
+  ball.style.left = x + "px";
+  ball.style.top = y + "px";
+
+  if (!dragging && Math.abs(vx) < 0.5 && Math.abs(vy) < 0.5) {
+hint.classList.add("show");
+} else {
+ hint.classList.remove("show");
+}
+
+  checkCollision();
+  requestAnimationFrame(update);
+}
+
+update();
+</script>
+
+</body>
+</html>
