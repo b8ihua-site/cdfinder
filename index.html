@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ja">
+ <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CDFinder | 学籍番号解析ツール</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<span style="font-size:10px; font-weight: norma">学籍番号解析ツール</span>
+  <h1>CDFinder</h1>
+
+  <div class="version-tag"><b>ver</b>&nbsp; <span class="gradient-text">Universal Formula</span></div>
+  <font class="version">Bから始まる全ての学部の学籍番号を解析可能</font>
+
+ <div class="cp_iptxt">
+  <input class="ef" id="codeInput" type="text" maxlength="8" placeholder="" style="border-radius:0px; color:#333; font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif; ">
+  <label>学籍番号を入力</label>
+  <span class="focus_line"></span>
+</div>
+
+  <button onclick="runCalculation()">解&nbsp;析</button>
+  <div id="resultCd"></div>
+  <div id="resultMessage"></div>
+
+<script src="script.js"></script>
+</body>
+</html>
